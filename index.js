@@ -31,9 +31,9 @@ async function run() {
     await client.connect();
 
     // insert all room data--------------------------------
-    app.post('/rooms', async(req,res) => {
+    app.post("/rooms", async(req,res) => {
         console.log(req.body);
-        const result = await roomsCollection.insertOne(req.body).toArray();
+        const result = await roomsCollection.insertOne(req.body);
         res.send(result)
     })
 
@@ -47,7 +47,7 @@ async function run() {
 
 
 
-    
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
