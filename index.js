@@ -29,7 +29,11 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-
+    // get all data-----------------------------------
+    app.get('/rooms', async(req,res) => {
+      const result = await roomsCollection.find().toArray();
+      res.send(result)
+    })
     // insert all room data--------------------------------
     app.post("/rooms", async(req,res) => {
         console.log(req.body);
