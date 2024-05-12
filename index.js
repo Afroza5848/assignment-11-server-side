@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
   }
 });
 const roomsCollection = client.db('roomsDB').collection('rooms');
+const bookingsCollection = client.db('roomsDB').collection('bookings');
 
 async function run() {
   try {
@@ -34,6 +35,10 @@ async function run() {
       const result = await roomsCollection.find().toArray();
       res.send(result)
     })
+    app.get('/bookings', async(req,res) => {
+      const result = await bookingsCollection.find().toArray();
+      res.send(result)
+    })
     // get single dat------------------
     app.get('/rooms/:id', async(req,res) => {
       const id = req.params.id
@@ -41,12 +46,26 @@ async function run() {
       const result = await roomsCollection.findOne(query)
       res.send(result)
     })
+    // get single data by the email-----------------
+    app.get('/bookings/:email', async(req,res) => {
+      const email = req.params.email;
+      const query = {user_email: email};
+      const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
+      
+  })
 
     // insert all room data--------------------------------
     app.post("/rooms", async(req,res) => {
         console.log(req.body);
         const result = await roomsCollection.insertOne(req.body);
         res.send(result)
+    })
+    // bookings data insert------------------
+    app.post("/bookings", async(req,res) => {
+      console.log(req.body);
+      const result = await bookingsCollection.insertOne(req.body);
+      res.send(result);
     })
     // on property update------------------------
     app.patch('/rooms/:id', async(req,res) => {
