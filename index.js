@@ -48,7 +48,18 @@ async function run() {
         const result = await roomsCollection.insertOne(req.body);
         res.send(result)
     })
-
+    // on property update------------------------
+    app.patch('/rooms/:id', async(req,res) => {
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)};
+      const status = req.body;
+      console.log(status);
+      const updateDoc = {
+        $set: status
+      }
+      const result = await roomsCollection.updateOne(query,updateDoc);
+      res.send(result)
+    })
 
 
 
