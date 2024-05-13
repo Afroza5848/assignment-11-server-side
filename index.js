@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
 });
 const roomsCollection = client.db('roomsDB').collection('rooms');
 const bookingsCollection = client.db('roomsDB').collection('bookings');
+const reviewCollection = client.db('roomsDB').collection('review');
 
 async function run() {
   try {
@@ -54,7 +55,14 @@ async function run() {
       res.send(result);
       
   })
-
+  // get data tnto featured section--------------------
+  app.get('/rooms', async (req, res) => {
+    const feature = req.params.feature ;
+    const query = {feature: "Yes"}; 
+    console.log(query);
+    const result = await roomsCollection.find(query).toArray();
+    res.send(result);
+  });
     // insert all room data--------------------------------
     app.post("/rooms", async(req,res) => {
         console.log(req.body);
@@ -79,10 +87,45 @@ async function run() {
       const result = await roomsCollection.updateOne(query,updateDoc);
       res.send(result)
     })
+    // delete data from bookings collection--------------------
+    app.delete('/bookings/:id', async(req,res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await bookingsCollection.deleteOne(query);
+      res.send(result)
+  })
 
+  app.patch('/bookings/:id', async(req,res) => {
+    const id = req.params.id
+    const query = {_id: new ObjectId(id)};
+    const startDate = req.body;
+    console.log(startDate);
+    const updateDoc = {
+      $set: startDate
+    }
+    const result = await bookingsCollection.updateOne(query,updateDoc);
+    res.send(result)
+  })
+  // feature----------------------------------------------------
+  app.get('/rooms/:feature', async (req, res) => {
+    const feature = req.params.feature ;
+    const query = {feature: "Yes"}; 
+    console.log(query);
+    const result = await roomsCollection.find(query).toArray();
+    res.send(result);
+  });
 
-
-
+  //review post data---------------------------------------------
+  app.post("/review", async(req,res) => {
+    console.log(req.body);
+    const result = await reviewCollection.insertOne(req.body);
+    res.send(result)
+})
+// review get data --------------------------------------------
+app.get('/review', async(req,res) => {
+  const result = await reviewCollection.find().toArray();
+  res.send(result)
+})
 
 
 
