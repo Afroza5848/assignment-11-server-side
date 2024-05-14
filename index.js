@@ -9,7 +9,11 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [
+    'http://localhost:5173',
+    'https://stay-spot-7d4c9.web.app',
+    'https://stay-spot-7d4c9.firebaseapp.com'
+  ],
   credentials: true,
   optionsSuccessStatus: 200
 }));
@@ -105,8 +109,8 @@ async function run() {
       res.send(result);
 
     })
-    // get data tnto featured section--------------------
-    app.get('/rooms', async (req, res) => {
+    // get data tnto featured section--------------------------------------------------------------------
+    app.get('/rooms-s', async(req, res) => {
       const feature = req.params.feature;
       const query = { feature: "Yes" };
       console.log(query);
@@ -137,6 +141,17 @@ async function run() {
       const result = await roomsCollection.updateOne(query, updateDoc);
       res.send(result)
     })
+    app.patch('/room-s/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) };
+      const status = req.body;
+      console.log(status);
+      const updateDoc = {
+        $set: status
+      }
+      const result = await roomsCollection.updateOne(query, updateDoc);
+      res.send(result)
+    })
     // delete data from bookings collection--------------------
     app.delete('/bookings/:id', async (req, res) => {
       const id = req.params.id;
@@ -157,25 +172,14 @@ async function run() {
       res.send(result)
     })
     // feature----------------------------------------------------
-    // app.get('/room/:feature', async (req, res) => {
-    //   const query = { feature:"Yes" };
-    //   console.log(query);
-    //   const result = await roomsCollection.find(query).toArray();
-    //   res.send(result);
-    // });
-    // app.get('/room/:feature', async (req, res) => {
-    //   const feature = req.params.feature;
-    //   const query = { feature: "Asa"}; // Assuming 'feature' is a field in your room documents
-    //   console.log(query);
-
-    //   try {
-    //     const result = await roomsCollection.find(query).toArray();
-    //     res.send(result);
-    //   } catch (error) {
-    //     console.error("Error fetching rooms:", error);
-    //     res.status(500).send("Internal Server Error");
-    //   }
-    // });
+    app.get('/room/:feature', async (req, res) => {
+      const feature = req.params.feature
+      const query = { feature:"Yes" };
+      console.log(query);
+      const result = await roomsCollection.find(query).toArray();
+      res.send(result);
+    });
+    
 
     //review post data---------------------------------------------
     app.post("/review", async (req, res) => {
@@ -188,7 +192,19 @@ async function run() {
       const result = await reviewCollection.find().toArray();
       res.send(result)
     })
-
+    // authentic user review-----------------------------------------------
+    app.get('/review', async(req,res) => {
+      const timestamp = req.params.timestamp;
+      const query = {timestamp: timestamp};
+      console.log(time);
+      try {
+        const result = await reviewCollection.find(query).sort({ timestamp: -1 }).toArray();
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+        res.status(500).send('Internal Server Error');
+      }
+    })
 
 
 
