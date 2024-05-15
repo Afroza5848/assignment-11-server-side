@@ -73,9 +73,10 @@ async function run() {
     })
     //  clear token for delete-----------------------------
     app.get('/logOut', async (req, res) => {
+      const user = req.body
       res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        // httpOnly: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: 0
       })
@@ -201,7 +202,7 @@ async function run() {
       const minPrice = parseFloat(req.query.minPrice) || 0;
       const maxPrice = parseFloat(req.query.maxPrice) || Infinity; 
       console.log(minPrice,maxPrice);
-      const query = {price:{ "$gte" : minPrice, "$lte" : maxPrice }}
+      const query = { price: { "$gte": minPrice, "$lte": maxPrice } };
       const result = await roomsCollection.find(query).toArray();
       res.send(result);
       //res.json({room: filteredRooms});
@@ -210,7 +211,7 @@ async function run() {
     // authentic user review---------------------------------------------------
     app.get('/review-s', async (req, res) => {
       try {
-        const result = await reviewCollection.find().sort(timestamp -1).toArray();
+        const result = await reviewCollection.find().sort({timestamp: -1}).toArray();
         res.send(result);
       } catch (error) {
         console.error('Error fetching rooms:', error);
@@ -219,7 +220,20 @@ async function run() {
 
 
 
+  //   app.post('/logout', async (req, res) => {
+  //     const user = req.body;
+  //     console.log('logging out', user);
+  //     res
+  //         .clearCookie('token', { maxAge: 0, sameSite: 'none', secure: true })
+  //         .send({ success: true })
+  //  })
 
+//   .cookie('token', token, {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === 'production', 
+//     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+
+// })
 
 
 
