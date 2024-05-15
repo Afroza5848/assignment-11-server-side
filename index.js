@@ -12,7 +12,8 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://stay-spot-7d4c9.web.app',
-    'https://stay-spot-7d4c9.firebaseapp.com'
+    'https://stay-spot-7d4c9.firebaseapp.com',
+    'https://stay-spot-7d4c9.web.app'
   ],
   credentials: true,
   optionsSuccessStatus: 200
@@ -21,16 +22,16 @@ app.use(express.json());
 app.use(cookieParser())
 
 //  verify token -----------------------
-const verifyToken = (req,res,next) => {
+const verifyToken = (req, res, next) => {
   const token = req.cookies.token;
-  if(!token){
-    return res.status(401).send({massage: 'Unauthorized access'});
+  if (!token) {
+    return res.status(401).send({ massage: 'Unauthorized access' });
   }
-  if(token){
+  if (token) {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if(err){
+      if (err) {
         console.log(err);
-        return res.status(401).send({massage: 'Unauthorized access'});
+        return res.status(401).send({ massage: 'Unauthorized access' });
       }
       console.log(decoded);
       req.user = decoded;
@@ -72,7 +73,7 @@ async function run() {
     })
     //  clear token for delete-----------------------------
     app.get('/logOut', async (req, res) => {
-      res.clearCookie('token',  {
+      res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
@@ -98,11 +99,11 @@ async function run() {
       res.send(result)
     })
     // get single data by the email-----------------
-    app.get('/bookings/:email',verifyToken, async (req, res) => {
+    app.get('/bookings/:email', verifyToken, async (req, res) => {
       const tokenEmail = req.user.email;
       const email = req.params.email;
-      if(tokenEmail !== email){
-        return res.status(403).send({massage: 'forbidden access'});
+      if (tokenEmail !== email) {
+        return res.status(403).send({ massage: 'forbidden access' });
       }
       const query = { user_email: email };
       const result = await bookingsCollection.find(query).toArray();
@@ -110,7 +111,7 @@ async function run() {
 
     })
     // get data tnto featured section--------------------------------------------------------------------
-    app.get('/rooms-s', async(req, res) => {
+    app.get('/rooms-s', async (req, res) => {
       const feature = req.params.feature;
       const query = { feature: "Yes" };
       console.log(query);
@@ -159,14 +160,16 @@ async function run() {
       const result = await bookingsCollection.deleteOne(query);
       res.send(result)
     })
-
+// -----------------------------------------------------------------------------------------
     app.patch('/bookings/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) };
       const startDate = req.body;
-      console.log(startDate);
+      console.log(query);
       const updateDoc = {
         $set: startDate
+          
+        
       }
       const result = await bookingsCollection.updateOne(query, updateDoc);
       res.send(result)
@@ -174,12 +177,12 @@ async function run() {
     // feature----------------------------------------------------
     app.get('/room/:feature', async (req, res) => {
       const feature = req.params.feature
-      const query = { feature:"Yes" };
+      const query = { feature: "Yes" };
       console.log(query);
       const result = await roomsCollection.find(query).toArray();
       res.send(result);
     });
-    
+
 
     //review post data---------------------------------------------
     app.post("/review", async (req, res) => {
@@ -192,17 +195,25 @@ async function run() {
       const result = await reviewCollection.find().toArray();
       res.send(result)
     })
-    // authentic user review-----------------------------------------------
-    app.get('/review', async(req,res) => {
-      const timestamp = req.params.timestamp;
-      const query = {timestamp: timestamp};
-      console.log(time);
+
+    // filter rooms by price range-------------------------------------------
+    app.get('/all_rooms', async(req, res) => {
+      const minPrice = parseFloat(req.query.minPrice) || 0;
+      const maxPrice = parseFloat(req.query.maxPrice) || Infinity; 
+      console.log(minPrice,maxPrice);
+      const query = {price:{ "$gte" : minPrice, "$lte" : maxPrice }}
+      const result = await roomsCollection.find(query).toArray();
+      res.send(result);
+      //res.json({room: filteredRooms});
+      
+    })
+    // authentic user review---------------------------------------------------
+    app.get('/review-s', async (req, res) => {
       try {
-        const result = await reviewCollection.find(query).sort({ timestamp: -1 }).toArray();
+        const result = await reviewCollection.find().sort(timestamp -1).toArray();
         res.send(result);
       } catch (error) {
         console.error('Error fetching rooms:', error);
-        res.status(500).send('Internal Server Error');
       }
     })
 
@@ -211,9 +222,11 @@ async function run() {
 
 
 
+
+
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
 
