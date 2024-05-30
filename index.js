@@ -201,12 +201,21 @@ async function run() {
     app.get('/all_rooms', async(req, res) => {
       const minPrice = parseFloat(req.query.minPrice) || 0;
       const maxPrice = parseFloat(req.query.maxPrice) || Infinity; 
-      console.log(minPrice,maxPrice);
+      console.log(typeof minPrice,typeof maxPrice);
       const query = { price: { "$gte": minPrice, "$lte": maxPrice } };
       const result = await roomsCollection.find(query).toArray();
       res.send(result);
-      //res.json({room: filteredRooms});
       
+    })
+    // search room------------------------------------------------------
+    app.get('/search_room', async(req,res) => {
+      const filter = req.query;
+      console.log(filter);
+      const query = {
+        name: {$regex: filter.search, $options: 'i'}
+      }
+      const result = await roomsCollection.find(query).toArray();
+      res.send(result);
     })
     // authentic user review---------------------------------------------------
     app.get('/review-s', async (req, res) => {
